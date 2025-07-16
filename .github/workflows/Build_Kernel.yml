@@ -22,6 +22,7 @@ on:
           - 'enuma'
           - 'dagu'
           - 'pipa'
+          - 'umi'
 
       system_version:
         description: 'Target System'
