@@ -1,7 +1,6 @@
 # About this repo
-English | [中文](README_CN.md)
 
-This repo (`android14-lineage21-mod` branch) is based on [Lineage OS 21 xiaomi sm8250 kernel source](https://github.com/LineageOS/android_kernel_xiaomi_sm8250).
+This repo (`android14-lineage22-mod` branch) is based on [Lineage OS 22 xiaomi sm8250 kernel source](https://github.com/LineageOS/android_kernel_xiaomi_sm8250).
 
 Originally this repo (`android12-stable-mod` or `android14-stable-mod` branch) is fork from [UtsavBalar1231's repo](https://github.com/UtsavBalar1231/kernel_xiaomi_sm8250), but the `android14-stable` branch has freeze problem when the device sleep for a while or wake up. So now I switched to lineage22 codebase. The MIUI features code and some parts of the drivers is still copied from UtsavBalar1231's branch.
 
@@ -37,65 +36,65 @@ Other Features/Improvement of this Kernel:
 4. Support CANBus and USB CAN adapter (like CANable).
 5. Support LZ4KD, LZ4, LZ4HC, ZSTD compression algorithms for ZRAM.
 
-# How to build
-1. Prepair the basic build environment. 
+# Setting Up the Environment
+### Prepair the basic build environment.
 
-    You have to have the basic common toolchains, such as `git`, `make`, `curl`, `bison`, `flex`, `zip`, etc, and some other packages.
-    In Debian/Ubuntu, you can
-    ```
-    sudo apt install build-essential git curl wget bison flex zip bc cpio libssl-dev ccache
-    ```
-    And also, you have to have `python` (only `python3` is not enough). you can install the apt package `python-is-python3`.
+You have to have the basic common toolchains, such as `git`, `make`, `curl`, `bison`, `flex`, `zip`, etc, and some other packages.
+In Debian/Ubuntu, you can
+```bash
+sudo apt install build-essential git curl wget bison flex zip bc cpio libssl-dev ccache
+```
+And also, you have to have `python` (only `python3` is not enough). you can install the apt package `python-is-python3`.
 
-    In RHEL/RPM based OS, you can
-    ```
-    sudo yum groupinstall 'Development Tools'
-    sudo yum install wget bc openssl-devel ccache
-    ```
+In RHEL/RPM based OS, you can
+```bash
+sudo yum groupinstall 'Development Tools'
+sudo yum install wget bc openssl-devel ccache
+```
 
-    Notice: `ccache` is enabled in `build.sh` for speed up the compiling. `CCACHE_DIR` has been set as `$HOME/.cache/ccache_mikernel` in `build.sh`. If you don't like you can remove or modify it.
+Notice: `ccache` is enabled in `build.sh` for speed up the compiling. `CCACHE_DIR` has been set as `$HOME/.cache/ccache_mikernel` in `build.sh`. If you don't like you can remove or modify it.
 
-2. Download [proton-clang] compiler toolchain
+### Download compiler toolchain
 
-    You have to have `aarch64-linux-gnu`, `arm-linux-gnueabi`, `clang`. [Proton Clang](https://github.com/kdrag0n/proton-clang/) is a good prebuilt clang cross compiler toolchain.
+You have to have `aarch64-linux-gnu`, `arm-linux-gnueabi`, `clang`. [Proton Clang](https://github.com/kdrag0n/proton-clang/) is a good prebuilt clang cross compiler toolchain.
 
-    The default toolchain path is `$HOME/proton-clang/proton-clang-20210522/bin` which is set in `build.sh`. If you are using another location please change `TOOLCHAIN_PATH` in `build.sh`.
+The default toolchain path is `$HOME/proton-clang/proton-clang-20210522/bin` which is set in `build.sh`. If you are using another location please change `TOOLCHAIN_PATH` in `build.sh`.
 
-    ```
-    mkdir proton-clang
-    cd proton-clang
-    wget https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.zip
-    unzip 20210522.zip
-    cd ..
-    ```
+```bash
+mkdir proton-clang
+cd proton-clang
+wget https://github.com/kdrag0n/proton-clang/archive/refs/tags/20210522.zip
+unzip 20210522.zip
+cd ..
+```
 
-3. Build
+# Build Kernel
 
-    Build without KernelSU: 
-    ```
-    bash build.sh TARGET_DEVICE
-    ```
+> [!NOTE]
+> If you see errors like `.relr.dyn` or `cannot find libc.so.6`, your toolchain's `ld` is too old. Remove it to use the system linker, or update your toolchain.
     
-    Build with KernelSU:
-    ```
-    bash build.sh TARGET_DEVICE ksu
-    ```
+* **KSU_VERSION** (Select KernelSU version):
 
-    For example, build for lmi (Redmi K30 Pro/POCO F2 Pro) without KernelSU:
-    ```
-    bash build.sh lmi
-    ````
+  * `ksu`: [Official KernelSU (v0.9.5)](https://github.com/tiann/KernelSU/tree/v0.9.5)
+  * `rksu`: [RKSU](https://github.com/rsuntk/KernelSU)
+  * `sukisu`: [SukiSU](https://github.com/ShirkNeko/KernelSU)
+  * `sukisu-ultra`: [SukiSU-Ultra](https://github.com/SukiSU-Ultra/SukiSU-Ultra)
 
-    For example, build for umi (Mi 10) with [KernelSU](https://github.com/tiann/KernelSU):
-    ```
-    bash build.sh umi ksu
-    ```
+* **ADDITIONAL_FUNCTION** (Enable `SuSFS` or `KPM`):
 
-    For example, build for umi (Mi 10) with [RKSU](https://github.com/rsuntk/KernelSU):
+  * `susfs`: Enable [SuSFS](https://gitlab.com/simonpunk/susfs4ksu)
+  * `kpm`: Enable [KPM](https://github.com/SukiSU-Ultra/SukiSU_KernelPatch_patch)
+  * `susfs-kpm` Enable SuSFS and KPM
+  * Any other value: Disable `SuSFS` and `KPM`
+
+* **SYSTEM** (Target system type):
+
+  * `miui`
+  * `aosp`
+  * Any other value: Build for all supported systems
+
+**To build the kernel, run:**
     
-    ```she
-    bash build.sh umi rksu
-    ```
-    
-    And also, here is a `buildall.sh` can build for all supported models at once.
-
+```bash
+bash build.sh TARGET_DEVICE [KSU_VERSION] [ADDITIONAL_FUNCTION] [SYSTEM]
+```
